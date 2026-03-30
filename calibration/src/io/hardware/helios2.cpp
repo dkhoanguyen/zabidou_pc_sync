@@ -125,8 +125,14 @@ DepthFrame decode_unsigned_image(Arena::IImage* image,
 
 }  // namespace
 
-Helios2::Helios2(std::size_t device_index, std::string pixel_format)
-    : device_index_(device_index), pixel_format_(std::move(pixel_format)) {}
+Helios2::Helios2(std::size_t device_index,
+                 std::string pixel_format,
+                 double acquisition_frame_rate_hz,
+                 std::size_t stream_buffer_count)
+    : device_index_(device_index),
+      pixel_format_(std::move(pixel_format)),
+      acquisition_frame_rate_hz_(acquisition_frame_rate_hz),
+      stream_buffer_count_(stream_buffer_count) {}
 
 Helios2::~Helios2() {
     close();
@@ -144,7 +150,7 @@ void Helios2::open() {
         camera_label_ = common::format_camera_label(camera_info, "Helios2");
         configure_device();
         read_coordinate_metadata();
-        device_->StartStream(1);
+        device_->StartStream(static_cast<std::size_t>(stream_buffer_count_));
         is_open_ = true;
     } catch (...) {
         close();
@@ -235,10 +241,20 @@ void Helios2::configure_device() {
     }
 
     Arena::SetNodeValue<GenICam::gcstring>(device_->GetNodeMap(), "PixelFormat", pixel_format_.c_str());
+    try {
+        Arena::SetNodeValue<GenICam::gcstring>(
+            device_->GetNodeMap(), "Scan3dHDRMode", hdr_enabled_ ? "On" : "Off");
+    } catch (...) {
+        // Some Helios firmware variants expose HDR differently; don't fail open on this optional setting.
+    }
+    Arena::SetNodeValue<bool>(device_->GetNodeMap(), "AcquisitionFrameRateEnable", true);
+    Arena::SetNodeValue<double>(device_->GetNodeMap(), "AcquisitionFrameRate", acquisition_frame_rate_hz_);
     Arena::SetNodeValue<GenICam::gcstring>(
-        device_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
-    Arena::SetNodeValue<bool>(device_->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
-    Arena::SetNodeValue<bool>(device_->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
+        device_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", stream_buffer_handling_mode_.c_str());
+    Arena::SetNodeValue<bool>(
+        device_->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", auto_negotiate_packet_size_);
+    Arena::SetNodeValue<bool>(
+        device_->GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend_enable_);
 #endif
 }
 

@@ -16,7 +16,9 @@ namespace calibration {
 class Helios2 final : public IDepthCamera {
 public:
     explicit Helios2(std::size_t device_index = 0,
-                     std::string pixel_format = "Coord3D_ABCY16");
+                     std::string pixel_format = "Coord3D_ABCY16",
+                     double acquisition_frame_rate_hz = 10.0,
+                     std::size_t stream_buffer_count = 1);
 
     ~Helios2() override;
 
@@ -32,6 +34,12 @@ private:
 
     std::size_t device_index_{0};
     std::string pixel_format_{"Coord3D_ABCY16"};
+    bool hdr_enabled_{true};
+    double acquisition_frame_rate_hz_{10.0};
+    std::size_t stream_buffer_count_{1};
+    bool auto_negotiate_packet_size_{true};
+    bool packet_resend_enable_{true};
+    std::string stream_buffer_handling_mode_{"NewestOnly"};
     std::string camera_label_{"Helios2"};
     Arena::IDevice* device_{nullptr};
     float scale_x_{1.0F};

@@ -58,11 +58,15 @@ cv::Mat image_to_bgr(Arena::IImage* image, const std::string& pixel_format) {
 Phoenix::Phoenix(std::size_t device_index,
                  std::string pixel_format,
                  int binning,
-                 std::string binning_mode)
+                 std::string binning_mode,
+                 double acquisition_frame_rate_hz,
+                 std::size_t stream_buffer_count)
     : device_index_(device_index),
       pixel_format_(std::move(pixel_format)),
       binning_(binning),
-      binning_mode_(std::move(binning_mode)) {}
+      binning_mode_(std::move(binning_mode)),
+      acquisition_frame_rate_hz_(acquisition_frame_rate_hz),
+      stream_buffer_count_(stream_buffer_count) {}
 
 Phoenix::~Phoenix() {
     close();
@@ -79,7 +83,7 @@ void Phoenix::open() {
         device_ = common::create_lucid_device_by_prefix("PHX", device_index_, &camera_info);
         camera_label_ = common::format_camera_label(camera_info, "Phoenix");
         configure_device();
-        device_->StartStream(1);
+        device_->StartStream(static_cast<std::size_t>(stream_buffer_count_));
         is_open_ = true;
     } catch (...) {
         close();
@@ -178,6 +182,8 @@ void Phoenix::configure_device() {
     }
 
     Arena::SetNodeValue<GenICam::gcstring>(device_->GetNodeMap(), "PixelFormat", pixel_format_.c_str());
+    Arena::SetNodeValue<bool>(device_->GetNodeMap(), "AcquisitionFrameRateEnable", true);
+    Arena::SetNodeValue<double>(device_->GetNodeMap(), "AcquisitionFrameRate", acquisition_frame_rate_hz_);
 
     if (binning_ > 1) {
         Arena::SetNodeValue<int64_t>(device_->GetNodeMap(), "BinningHorizontal", binning_);
@@ -192,9 +198,11 @@ void Phoenix::configure_device() {
     }
 
     Arena::SetNodeValue<GenICam::gcstring>(
-        device_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
-    Arena::SetNodeValue<bool>(device_->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
-    Arena::SetNodeValue<bool>(device_->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
+        device_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", stream_buffer_handling_mode_.c_str());
+    Arena::SetNodeValue<bool>(
+        device_->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", auto_negotiate_packet_size_);
+    Arena::SetNodeValue<bool>(
+        device_->GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend_enable_);
 #endif
 }
 

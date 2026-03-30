@@ -16,7 +16,7 @@ struct CliArgs {
     std::size_t phoenix_index{0};
     std::size_t helios_index{0};
     std::uint32_t timeout_ms{1000};
-    std::uint64_t max_delta_ns{20'000'000};
+    std::uint64_t max_delta_ns{150'000'000};
     std::string helios_pixel_format{"Coord3D_ABCY16"};
 };
 
@@ -128,6 +128,19 @@ int main(int argc, char** argv) {
         std::cout << "Showing Phoenix (left) and Helios intensity (right). Press 'q' to quit.\n";
 
         const std::string window_name = "Phoenix + Helios";
+        cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+        cv::Mat waiting_frame(480, 960, CV_8UC3, cv::Scalar(0, 0, 0));
+        cv::putText(waiting_frame,
+                    "Waiting for paired Phoenix + Helios frames...",
+                    cv::Point(24, 240),
+                    cv::FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    cv::Scalar(255, 255, 255),
+                    2,
+                    cv::LINE_AA);
+        cv::imshow(window_name, waiting_frame);
+        cv::waitKey(1);
+
         while (source.has_next()) {
             calibration::FramePair pair;
             if (!source.next(pair)) {
