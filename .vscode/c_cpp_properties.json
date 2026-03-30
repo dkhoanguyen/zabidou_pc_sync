@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/calibration/include",
+                "${workspaceFolder}/calibration/include/calibration",
+                "/usr/include/opencv4",
+                "/opt/lucid/ArenaSDK/include",
+                "/opt/lucid/ArenaSDK/include/Arena",
+                "/opt/lucid/ArenaSDK/include/ArenaC",
+                "/opt/lucid/ArenaSDK/include/GenTL",
+                "/opt/lucid/ArenaSDK/include/LucidNicControl",
+                "/opt/lucid/ArenaSDK/include/Save",
+                "/opt/lucid/ArenaSDK/include/SaveC",
+                "/opt/lucid/ArenaSDK/GenICam/library/CPP/include"
+            ],
+            "defines": [
+                "CALIBRATION_HAS_ARENA_SDK=1"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "compileCommands": "${workspaceFolder}/calibration/build/compile_commands.json",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/calibration/include",
+                    "/usr/include/opencv4",
+                    "/opt/lucid/ArenaSDK/include",
+                    "/opt/lucid/ArenaSDK/GenICam/library/CPP/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}

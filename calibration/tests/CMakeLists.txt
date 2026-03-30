@@ -1,0 +1,8 @@
+add_executable(test_opencv_calibration test_opencv_calibration.cpp)
+add_executable(test_live_frame_source test_live_frame_source.cpp)
+
+target_link_libraries(test_opencv_calibration PRIVATE calibration)
+target_link_libraries(test_live_frame_source PRIVATE calibration)
+
+add_test(NAME opencv_calibration_smoke COMMAND test_opencv_calibration)
+add_test(NAME live_frame_source_threaded COMMAND test_live_frame_source)
