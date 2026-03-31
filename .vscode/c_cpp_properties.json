@@ -1,12 +1,20 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Linux-Workspace",
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/calibration/include",
                 "${workspaceFolder}/calibration/include/calibration",
+                "${workspaceFolder}/calibration/src",
+                "${workspaceFolder}/calibration/build",
+                "${workspaceFolder}/ros2_ws/src",
+                "${workspaceFolder}/ros2_ws/src/lucid_colored_cloud",
+                "${workspaceFolder}/ros2_ws/src/lucid_colored_cloud/src",
+                "${workspaceFolder}/ros2_ws/build/**",
+                "${workspaceFolder}/ros2_ws/install/**",
                 "/usr/include/opencv4",
+                "/opt/ros/jazzy/include",
                 "/opt/lucid/ArenaSDK/include",
                 "/opt/lucid/ArenaSDK/include/Arena",
                 "/opt/lucid/ArenaSDK/include/ArenaC",
@@ -17,9 +25,21 @@
                 "/opt/lucid/ArenaSDK/GenICam/library/CPP/include"
             ],
             "defines": [
-                "CALIBRATION_HAS_ARENA_SDK=1"
+                "CALIBRATION_HAS_ARENA_SDK=1",
+                "RCUTILS_ENABLE_FAULT_INJECTION=0"
             ],
             "compilerPath": "/usr/bin/g++",
+            "compilerArgs": [
+                "-I${workspaceFolder}/calibration/include",
+                "-I${workspaceFolder}/ros2_ws/src/lucid_colored_cloud/src",
+                "-I/opt/ros/jazzy/include",
+                "-I/usr/include/opencv4",
+                "-I/opt/lucid/ArenaSDK/include",
+                "-I/opt/lucid/ArenaSDK/GenICam/library/CPP/include",
+                "-L${workspaceFolder}/calibration/build",
+                "-L/opt/lucid/ArenaSDK/lib64",
+                "-L/opt/ros/jazzy/lib"
+            ],
             "compileCommands": "${workspaceFolder}/calibration/build/compile_commands.json",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
@@ -28,9 +48,17 @@
                 "path": [
                     "${workspaceFolder}",
                     "${workspaceFolder}/calibration/include",
+                    "${workspaceFolder}/calibration/src",
+                    "${workspaceFolder}/ros2_ws/src",
+                    "${workspaceFolder}/ros2_ws/build",
+                    "${workspaceFolder}/ros2_ws/install",
                     "/usr/include/opencv4",
+                    "/opt/ros/jazzy/include",
                     "/opt/lucid/ArenaSDK/include",
-                    "/opt/lucid/ArenaSDK/GenICam/library/CPP/include"
+                    "/opt/lucid/ArenaSDK/GenICam/library/CPP/include",
+                    "${workspaceFolder}/calibration/build",
+                    "/opt/lucid/ArenaSDK/lib64",
+                    "/opt/ros/jazzy/lib"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             }

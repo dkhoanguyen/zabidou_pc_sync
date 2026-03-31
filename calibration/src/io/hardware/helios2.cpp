@@ -198,7 +198,12 @@ bool Helios2::grab(DepthFrame& out, std::uint32_t timeout_ms) {
         return false;
     }
 
-    Arena::IImage* image = device_->GetImage(timeout_ms);
+    Arena::IImage* image = nullptr;
+    try {
+        image = device_->GetImage(timeout_ms);
+    } catch (...) {
+        return false;
+    }
     try {
         const auto pixel_format = image->GetPixelFormat();
         if (pixel_format == Coord3D_ABCY16s) {
@@ -241,6 +246,22 @@ void Helios2::configure_device() {
     }
 
     Arena::SetNodeValue<GenICam::gcstring>(device_->GetNodeMap(), "PixelFormat", pixel_format_.c_str());
+    if (!operating_mode_.empty()) {
+        try {
+            Arena::SetNodeValue<GenICam::gcstring>(
+                device_->GetNodeMap(), "Scan3dOperatingMode", operating_mode_.c_str());
+        } catch (...) {
+            // Operating-mode naming differs across some firmware variants.
+        }
+    }
+    if (!exposure_time_selector_.empty()) {
+        try {
+            Arena::SetNodeValue<GenICam::gcstring>(
+                device_->GetNodeMap(), "ExposureTimeSelector", exposure_time_selector_.c_str());
+        } catch (...) {
+            // Exposure-time presets may vary by firmware or model.
+        }
+    }
     try {
         Arena::SetNodeValue<GenICam::gcstring>(
             device_->GetNodeMap(), "Scan3dHDRMode", hdr_enabled_ ? "On" : "Off");

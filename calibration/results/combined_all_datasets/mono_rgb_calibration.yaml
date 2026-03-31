@@ -1,0 +1,32 @@
+%YAML:1.0
+---
+backend: opencv_mono
+session_name: data_20260331_113030
+session_dir: calibration/data/data_20260331_113030
+combined_session_count: 2
+combined_sessions:
+   - data_20260331_113030
+   - data_20260331_115134
+modality: rgb
+camera_label: "PHX050S1-Q[serial=253700611]"
+checkerboard_rows: 13
+checkerboard_cols: 9
+square_size_m: 3.9999999105930328e-02
+image_width: 1224
+image_height: 1024
+used_images: 80
+total_images: 91
+rms_error: 4.4867611217318332e-01
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 9.0868541070885965e+02, 0., 6.0935374586517173e+02, 0.,
+       9.0965255331904029e+02, 4.9981602345090505e+02, 0., 0., 1. ]
+dist_coeffs: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ -1.1596506939750803e-01, 1.0208594920632692e-01,
+       9.4117571139307838e-04, 1.4784936189766570e-03,
+       -6.9604476776334454e-02 ]

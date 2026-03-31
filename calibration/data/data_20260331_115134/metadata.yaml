@@ -1,0 +1,322 @@
+%YAML:1.0
+---
+session_name: data_20260331_115134
+session_dir: calibration/data/data_20260331_115134
+timeout_ms: 1000
+max_delta_ns: "150000000"
+saved_pair_count: 32
+rgb_camera:
+   label: "PHX050S1-Q[serial=253700611]"
+   device_index: 0
+   pixel_format: BayerRG8
+   binning: 2
+   binning_mode: Average
+   target_acquisition_frame_rate_hz: 10.
+depth_camera:
+   label: "HTP003S-001[serial=255101463]"
+   device_index: 0
+   pixel_format: Coord3D_ABCY16
+   target_acquisition_frame_rate_hz: 10.
+   saved_representation: intensity
+checkerboard:
+   rows: 13
+   cols: 9
+   square_size_m: 0.04
+   pattern_type: chessboard
+   notes: Populate after data collection
+calibration_notes:
+   rgb_images_pattern: "*_rgb.png"
+   depth_images_pattern: "*_intensity.png"
+   pairing_source: live_frame_source_timestamp_matching
+   pairing_timestamp_tolerance_ns: "150000000"
+   mono_calibration_ready: 1
+   stereo_calibration_ready: 1
+saved_frames:
+   -
+      rgb_timestamp_ns: "85087584565576"
+      depth_timestamp_ns: "85087716448608"
+      rgb_filename: "pair_rgb_85087584565576_depth_85087716448608_rgb.png"
+      intensity_filename: "pair_rgb_85087584565576_depth_85087716448608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85090884246096"
+      depth_timestamp_ns: "85091016366112"
+      rgb_filename: "pair_rgb_85090884246096_depth_85091016366112_rgb.png"
+      intensity_filename: "pair_rgb_85090884246096_depth_85091016366112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85102183152112"
+      depth_timestamp_ns: "85102316083608"
+      rgb_filename: "pair_rgb_85102183152112_depth_85102316083608_rgb.png"
+      intensity_filename: "pair_rgb_85102183152112_depth_85102316083608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85106882697096"
+      depth_timestamp_ns: "85107015966112"
+      rgb_filename: "pair_rgb_85106882697096_depth_85107015966112_rgb.png"
+      intensity_filename: "pair_rgb_85106882697096_depth_85107015966112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85107382648688"
+      depth_timestamp_ns: "85107515953608"
+      rgb_filename: "pair_rgb_85107382648688_depth_85107515953608_rgb.png"
+      intensity_filename: "pair_rgb_85107382648688_depth_85107515953608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85121681264272"
+      depth_timestamp_ns: "85121815596112"
+      rgb_filename: "pair_rgb_85121681264272_depth_85121815596112_rgb.png"
+      intensity_filename: "pair_rgb_85121681264272_depth_85121815596112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85142979202168"
+      depth_timestamp_ns: "85143115063608"
+      rgb_filename: "pair_rgb_85142979202168_depth_85143115063608_rgb.png"
+      intensity_filename: "pair_rgb_85142979202168_depth_85143115063608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85146978814912"
+      depth_timestamp_ns: "85147114963608"
+      rgb_filename: "pair_rgb_85146978814912_depth_85147114963608_rgb.png"
+      intensity_filename: "pair_rgb_85146978814912_depth_85147114963608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85157577788704"
+      depth_timestamp_ns: "85157714698608"
+      rgb_filename: "pair_rgb_85157577788704_depth_85157714698608_rgb.png"
+      intensity_filename: "pair_rgb_85157577788704_depth_85157714698608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85175976007352"
+      depth_timestamp_ns: "85176114238608"
+      rgb_filename: "pair_rgb_85175976007352_depth_85176114238608_rgb.png"
+      intensity_filename: "pair_rgb_85175976007352_depth_85176114238608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85180175600744"
+      depth_timestamp_ns: "85180314133608"
+      rgb_filename: "pair_rgb_85180175600744_depth_85180314133608_rgb.png"
+      intensity_filename: "pair_rgb_85180175600744_depth_85180314133608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85181975426480"
+      depth_timestamp_ns: "85182114088608"
+      rgb_filename: "pair_rgb_85181975426480_depth_85182114088608_rgb.png"
+      intensity_filename: "pair_rgb_85181975426480_depth_85182114088608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182375387752"
+      depth_timestamp_ns: "85182514078608"
+      rgb_filename: "pair_rgb_85182375387752_depth_85182514078608_rgb.png"
+      intensity_filename: "pair_rgb_85182375387752_depth_85182514078608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182475378072"
+      depth_timestamp_ns: "85182614076112"
+      rgb_filename: "pair_rgb_85182475378072_depth_85182614076112_rgb.png"
+      intensity_filename: "pair_rgb_85182475378072_depth_85182614076112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182575368392"
+      depth_timestamp_ns: "85182714073608"
+      rgb_filename: "pair_rgb_85182575368392_depth_85182714073608_rgb.png"
+      intensity_filename: "pair_rgb_85182575368392_depth_85182714073608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182675358712"
+      depth_timestamp_ns: "85182814071112"
+      rgb_filename: "pair_rgb_85182675358712_depth_85182814071112_rgb.png"
+      intensity_filename: "pair_rgb_85182675358712_depth_85182814071112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182775349024"
+      depth_timestamp_ns: "85182914068608"
+      rgb_filename: "pair_rgb_85182775349024_depth_85182914068608_rgb.png"
+      intensity_filename: "pair_rgb_85182775349024_depth_85182914068608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182875339344"
+      depth_timestamp_ns: "85183014066112"
+      rgb_filename: "pair_rgb_85182875339344_depth_85183014066112_rgb.png"
+      intensity_filename: "pair_rgb_85182875339344_depth_85183014066112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85182975329664"
+      depth_timestamp_ns: "85183114063608"
+      rgb_filename: "pair_rgb_85182975329664_depth_85183114063608_rgb.png"
+      intensity_filename: "pair_rgb_85182975329664_depth_85183114063608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85183075319984"
+      depth_timestamp_ns: "85183214061112"
+      rgb_filename: "pair_rgb_85183075319984_depth_85183214061112_rgb.png"
+      intensity_filename: "pair_rgb_85183075319984_depth_85183214061112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85183175310304"
+      depth_timestamp_ns: "85183314058608"
+      rgb_filename: "pair_rgb_85183175310304_depth_85183314058608_rgb.png"
+      intensity_filename: "pair_rgb_85183175310304_depth_85183314058608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85184175213488"
+      depth_timestamp_ns: "85184314033608"
+      rgb_filename: "pair_rgb_85184175213488_depth_85184314033608_rgb.png"
+      intensity_filename: "pair_rgb_85184175213488_depth_85184314033608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85190774574528"
+      depth_timestamp_ns: "85190913868608"
+      rgb_filename: "pair_rgb_85190774574528_depth_85190913868608_rgb.png"
+      intensity_filename: "pair_rgb_85190774574528_depth_85190913868608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85194174245368"
+      depth_timestamp_ns: "85194313783608"
+      rgb_filename: "pair_rgb_85194174245368_depth_85194313783608_rgb.png"
+      intensity_filename: "pair_rgb_85194174245368_depth_85194313783608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85197173954928"
+      depth_timestamp_ns: "85197313708608"
+      rgb_filename: "pair_rgb_85197173954928_depth_85197313708608_rgb.png"
+      intensity_filename: "pair_rgb_85197173954928_depth_85197313708608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85200273654808"
+      depth_timestamp_ns: "85200413631112"
+      rgb_filename: "pair_rgb_85200273654808_depth_85200413631112_rgb.png"
+      intensity_filename: "pair_rgb_85200273654808_depth_85200413631112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85200373645128"
+      depth_timestamp_ns: "85200513628608"
+      rgb_filename: "pair_rgb_85200373645128_depth_85200513628608_rgb.png"
+      intensity_filename: "pair_rgb_85200373645128_depth_85200513628608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85200473635448"
+      depth_timestamp_ns: "85200613626112"
+      rgb_filename: "pair_rgb_85200473635448_depth_85200613626112_rgb.png"
+      intensity_filename: "pair_rgb_85200473635448_depth_85200613626112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85200573625768"
+      depth_timestamp_ns: "85200713623608"
+      rgb_filename: "pair_rgb_85200573625768_depth_85200713623608_rgb.png"
+      intensity_filename: "pair_rgb_85200573625768_depth_85200713623608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85200673616088"
+      depth_timestamp_ns: "85200813621112"
+      rgb_filename: "pair_rgb_85200673616088_depth_85200813621112_rgb.png"
+      intensity_filename: "pair_rgb_85200673616088_depth_85200813621112_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85201573528952"
+      depth_timestamp_ns: "85201713598608"
+      rgb_filename: "pair_rgb_85201573528952_depth_85201713598608_rgb.png"
+      intensity_filename: "pair_rgb_85201573528952_depth_85201713598608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480
+   -
+      rgb_timestamp_ns: "85204373257880"
+      depth_timestamp_ns: "85204513528608"
+      rgb_filename: "pair_rgb_85204373257880_depth_85204513528608_rgb.png"
+      intensity_filename: "pair_rgb_85204373257880_depth_85204513528608_intensity.png"
+      rgb_width: 1224
+      rgb_height: 1024
+      intensity_width: 640
+      intensity_height: 480

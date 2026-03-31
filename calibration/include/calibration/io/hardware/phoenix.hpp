@@ -20,7 +20,7 @@ public:
                      int binning = 2,
                      std::string binning_mode = "Average",
                      double acquisition_frame_rate_hz = 10.0,
-                     std::size_t stream_buffer_count = 1);
+                     std::size_t stream_buffer_count = 4);
 
     ~Phoenix() override;
 
@@ -41,7 +41,7 @@ private:
     int binning_{2};
     std::string binning_mode_{"Average"};
     double acquisition_frame_rate_hz_{10.0};
-    std::size_t stream_buffer_count_{1};
+    std::size_t stream_buffer_count_{4};
     bool auto_negotiate_packet_size_{true};
     bool packet_resend_enable_{true};
     std::string stream_buffer_handling_mode_{"NewestOnly"};

@@ -26,7 +26,7 @@ struct CliArgs {
     std::uint32_t timeout_ms{1000};
     std::uint64_t max_delta_ns{150'000'000};
     std::string helios_pixel_format{"Coord3D_ABCY16"};
-    std::filesystem::path output_root{"calibration"};
+    std::filesystem::path output_root{"calibration/data"};
 };
 
 struct SavedFrameRecord {
@@ -119,19 +119,11 @@ cv::Mat make_side_by_side_view(const calibration::FramePair& pair, cv::Mat& inte
     if (pair.rgb.bgr.empty()) {
         rgb_view = cv::Mat::zeros(intensity_vis_out.rows, intensity_vis_out.cols, CV_8UC3);
     } else {
-        rgb_view = pair.rgb.bgr;
+        cv::resize(pair.rgb.bgr, rgb_view, intensity_vis_out.size(), 0.0, 0.0, cv::INTER_LINEAR);
     }
 
-    const int output_height = std::max(rgb_view.rows, intensity_vis_out.rows);
-    cv::Mat rgb_padded(output_height, rgb_view.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-    cv::Mat intensity_padded(output_height, intensity_vis_out.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-
-    rgb_view.copyTo(rgb_padded(cv::Rect(0, 0, rgb_view.cols, rgb_view.rows)));
-    intensity_vis_out.copyTo(
-        intensity_padded(cv::Rect(0, 0, intensity_vis_out.cols, intensity_vis_out.rows)));
-
     cv::Mat combined;
-    cv::hconcat(rgb_padded, intensity_padded, combined);
+    cv::hconcat(rgb_view, intensity_vis_out, combined);
     return combined;
 }
 
@@ -223,6 +215,14 @@ void write_metadata(const std::filesystem::path& metadata_path,
     fs << "pixel_format" << args.helios_pixel_format;
     fs << "target_acquisition_frame_rate_hz" << 10.0;
     fs << "saved_representation" << "intensity";
+    fs << "}";
+
+    fs << "checkerboard" << "{";
+    fs << "rows" << -1;
+    fs << "cols" << -1;
+    fs << "square_size_m" << -1.0;
+    fs << "pattern_type" << "chessboard";
+    fs << "notes" << "Populate after data collection";
     fs << "}";
 
     fs << "calibration_notes" << "{";

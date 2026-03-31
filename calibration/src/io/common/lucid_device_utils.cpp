@@ -4,6 +4,7 @@
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 #if CALIBRATION_HAS_ARENA_SDK
 #include "ArenaApi.h"
@@ -177,6 +178,53 @@ void destroy_lucid_device(Arena::IDevice* device) {
     release_arena_system();
 #else
     (void)device;
+#endif
+}
+
+HeliosFactoryIntrinsics read_helios_factory_intrinsics(std::size_t device_index) {
+#if CALIBRATION_HAS_ARENA_SDK
+    CameraInfo camera_info;
+    Arena::IDevice* device = create_lucid_device_by_prefix("HTP", device_index, &camera_info);
+
+    try {
+        auto* node_map = device->GetNodeMap();
+        HeliosFactoryIntrinsics intrinsics;
+        intrinsics.camera_info = camera_info;
+        intrinsics.focal_length_x = Arena::GetNodeValue<double>(node_map, "CalibFocalLengthX");
+        intrinsics.focal_length_y = Arena::GetNodeValue<double>(node_map, "CalibFocalLengthY");
+        intrinsics.optical_center_x = Arena::GetNodeValue<double>(node_map, "CalibOpticalCenterX");
+        intrinsics.optical_center_y = Arena::GetNodeValue<double>(node_map, "CalibOpticalCenterY");
+
+        intrinsics.lens_distortion_values.reserve(5);
+        for (int i = 0; i < 5; ++i) {
+            const std::string selector = "Value" + std::to_string(i);
+            Arena::SetNodeValue<GenICam::gcstring>(
+                node_map, "CalibLensDistortionValueSelector", selector.c_str());
+            intrinsics.lens_distortion_values.push_back(
+                Arena::GetNodeValue<double>(node_map, "CalibLensDistortionValue"));
+        }
+
+        Arena::SetNodeValue<GenICam::gcstring>(node_map, "Scan3dCoordinateSelector", "CoordinateA");
+        intrinsics.scale_x = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateScale");
+        intrinsics.offset_x = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateOffset");
+
+        Arena::SetNodeValue<GenICam::gcstring>(node_map, "Scan3dCoordinateSelector", "CoordinateB");
+        intrinsics.scale_y = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateScale");
+        intrinsics.offset_y = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateOffset");
+
+        Arena::SetNodeValue<GenICam::gcstring>(node_map, "Scan3dCoordinateSelector", "CoordinateC");
+        intrinsics.scale_z = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateScale");
+        intrinsics.offset_z = Arena::GetNodeValue<double>(node_map, "Scan3dCoordinateOffset");
+
+        destroy_lucid_device(device);
+        return intrinsics;
+    } catch (...) {
+        destroy_lucid_device(device);
+        throw;
+    }
+#else
+    (void)device_index;
+    throw std::runtime_error("read_helios_factory_intrinsics requires CALIBRATION_HAS_ARENA_SDK=1");
 #endif
 }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lucid_colored_cloud</name>
+  <version>0.1.0</version>
+  <description>Simple ROS 2 publisher for a colored Helios point cloud using Phoenix RGB.</description>
+
+  <maintainer email="khoa@example.com">khoa</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

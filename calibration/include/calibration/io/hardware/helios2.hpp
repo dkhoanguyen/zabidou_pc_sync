@@ -18,7 +18,7 @@ public:
     explicit Helios2(std::size_t device_index = 0,
                      std::string pixel_format = "Coord3D_ABCY16",
                      double acquisition_frame_rate_hz = 10.0,
-                     std::size_t stream_buffer_count = 1);
+                     std::size_t stream_buffer_count = 4);
 
     ~Helios2() override;
 
@@ -34,9 +34,11 @@ private:
 
     std::size_t device_index_{0};
     std::string pixel_format_{"Coord3D_ABCY16"};
-    bool hdr_enabled_{true};
+    std::string operating_mode_{};
+    std::string exposure_time_selector_{};
+    bool hdr_enabled_{false};
     double acquisition_frame_rate_hz_{10.0};
-    std::size_t stream_buffer_count_{1};
+    std::size_t stream_buffer_count_{4};
     bool auto_negotiate_packet_size_{true};
     bool packet_resend_enable_{true};
     std::string stream_buffer_handling_mode_{"NewestOnly"};

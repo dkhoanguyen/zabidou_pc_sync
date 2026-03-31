@@ -1,0 +1,32 @@
+%YAML:1.0
+---
+backend: opencv_mono
+session_name: data_20260331_113030
+session_dir: calibration/data/data_20260331_113030
+combined_session_count: 2
+combined_sessions:
+   - data_20260331_113030
+   - data_20260331_115134
+modality: depth
+camera_label: "HTP003S-001[serial=255101463]"
+checkerboard_rows: 13
+checkerboard_cols: 9
+square_size_m: 3.9999999105930328e-02
+image_width: 640
+image_height: 480
+used_images: 74
+total_images: 91
+rms_error: 4.1333111656436934e+00
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 4.8476136545277188e+02, 0., 3.5429114810770204e+02, 0.,
+       4.8799176155971810e+02, 2.6714337156301627e+02, 0., 0., 1. ]
+dist_coeffs: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ -4.6472604793638150e-01, 7.9328235583298212e-01,
+       -4.4296562554103592e-03, -9.4206111253047568e-03,
+       -6.3654153900841637e-01 ]
