@@ -27,7 +27,14 @@ class Helios2Camera(LucidCamera):
     # Pixel formats this class supports (in preference order)
     _SUPPORTED_FORMATS = ('Coord3D_ABCY16', 'Coord3D_ABCY16s')
 
-    def __init__(self, device, pixel_format: str = 'Coord3D_ABCY16'):
+    def __init__(
+        self,
+        device,
+        pixel_format: str = 'Coord3D_ABCY16',
+        hdr_mode: str = '',
+        operating_mode: str = '',
+        exposure_time_selector: str = '',
+    ):
         """
         Parameters
         ----------
@@ -44,6 +51,9 @@ class Helios2Camera(LucidCamera):
                 f'got {pixel_format!r}'
             )
         self._pixel_format = pixel_format
+        self._hdr_mode = hdr_mode
+        self._operating_mode = operating_mode
+        self._exposure_time_selector = exposure_time_selector
 
         # Populated during configure()
         self._scale_x: float = 1.0
@@ -59,6 +69,24 @@ class Helios2Camera(LucidCamera):
     def configure(self):
         """Set pixel format, read coordinate scales/offsets."""
         self._nodemap['PixelFormat'].value = self._pixel_format
+        if self._operating_mode:
+            try:
+                self._nodemap['Scan3dOperatingMode'].value = self._operating_mode
+            except Exception:
+                # Operating-mode naming varies across some Helios firmware variants.
+                pass
+        if self._exposure_time_selector:
+            try:
+                self._nodemap['ExposureTimeSelector'].value = self._exposure_time_selector
+            except Exception:
+                # Exposure-time presets may vary by firmware or model.
+                pass
+        if self._hdr_mode:
+            try:
+                self._nodemap['Scan3dHDRMode'].value = self._hdr_mode
+            except Exception:
+                # HDR control naming varies across some Helios firmware variants.
+                pass
         self._apply_stream_defaults()
         self._read_coordinate_metadata()
 

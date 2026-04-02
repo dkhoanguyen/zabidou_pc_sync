@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--max-delta-sec",
         type=float,
-        default=0.15,
+        default=0.5,
         help="Max allowed RGB/Helios timestamp delta in seconds for pairing.",
     )
     parser.add_argument(
@@ -98,6 +98,11 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=7.0,
         help="Initial 3D view zoom (camera distance, smaller = more zoomed in, default: 7).",
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Capture one RGB/Helios pair, display one colored point cloud, then stop.",
     )
     return parser.parse_args()
 
@@ -145,7 +150,7 @@ def open_cameras(args: argparse.Namespace):
     phoenix = PhoenixCamera(
         phoenix_device,
         pixel_format="BayerRG8",
-        binning=2,
+        binning=1,
         binning_mode="Average",
     )
     helios = Helios2Camera(helios_device, pixel_format=args.helios_format)
@@ -309,6 +314,34 @@ def main() -> int:
     helios = None
     try:
         phoenix, helios = open_cameras(args)
+        if args.once:
+            print("Capturing one RGB/Helios pair...")
+            rgb_frame, helios_frame = capture_paired_frames(
+                phoenix, helios, args.max_delta_sec, args.max_attempts
+            )
+
+            points_m, colors_rgb, projected_xy = colorize_point_cloud(
+                helios_frame.xyz,
+                rgb_frame.image,
+                calibration["rgb_camera_matrix"],
+                calibration["rgb_dist_coeffs"],
+                calibration["R"],
+                calibration["T"],
+            )
+
+            update_matplotlib_point_cloud(axes, points_m, colors_rgb, args.max_plot_points)
+            figure.canvas.draw_idle()
+            plt.show(block=False)
+            plt.pause(0.001)
+
+            if args.preview:
+                show_preview(rgb_frame.image, projected_xy)
+
+            print("Displayed one colored point cloud — close the Matplotlib window to exit.")
+            plt.ioff()
+            plt.show()
+            return 0
+
         print("Streaming — close the Matplotlib window to stop.")
 
         while plt.fignum_exists(figure.number):
