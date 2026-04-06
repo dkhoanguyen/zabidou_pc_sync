@@ -1,0 +1,18 @@
+%YAML:1.0
+---
+status: ok
+frame_index: 23
+origin_x_px: 193
+origin_y_px: 102
+center_x_px: 265.57522123893807
+center_y_px: 108.64601769911505
+offset_x_px: 72.57522123893807
+offset_y_px: 6.646017699115049
+distance_px: 72.878887814906719
+distance_m: 0.35559729354095948
+center_xyz_m: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -0.27363947290754276, -0.64675980511469089,
+       2.4014749416058621 ]

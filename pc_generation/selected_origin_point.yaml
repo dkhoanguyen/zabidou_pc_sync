@@ -1,0 +1,10 @@
+%YAML:1.0
+---
+origin_x_px: 193
+origin_y_px: 102
+origin_depth_mm: 2411.
+origin_xyz_mm: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -626.5, -689.75, 2411. ]
