@@ -1,0 +1,35 @@
+%YAML:1.0
+---
+backend: opencv_calibrateCamera_from_saved_points
+rgb_rms_error: 83.313803041851827
+rgb_camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 6410.2740302869679, 0., 790.82865293932707, 0.,
+       430.66164478004004, 670.43168289972232, 0., 0., 1. ]
+rgb_dist_coeffs: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ -0.48350919279255289, 109.24873513201621, -1.3814014318956136,
+       -2.717299472391761, -345.24049075011305 ]
+rgb_image_width: 1224
+rgb_image_height: 1024
+rgb_image_count: 2
+intensity_rms_error: 48.184235975586219
+intensity_camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 13238.591072657544, 0., 2110.8178329611001, 0.,
+       9383.6401843850981, 736.14303750552585, 0., 0., 1. ]
+intensity_dist_coeffs: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ -45.407671388023729, 366.28782375553607, -0.6608330439347323,
+       -1.6416476674281448, -1291.3252908817597 ]
+intensity_image_width: 640
+intensity_image_height: 480
+intensity_image_count: 2

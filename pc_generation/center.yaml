@@ -1,18 +1,18 @@
 %YAML:1.0
 ---
 status: ok
-frame_index: 23
-origin_x_px: 193
-origin_y_px: 102
-center_x_px: 265.57522123893807
-center_y_px: 108.64601769911505
-offset_x_px: 72.57522123893807
-offset_y_px: 6.646017699115049
-distance_px: 72.878887814906719
-distance_m: 0.35559729354095948
+frame_index: 11
+origin_x_px: 220
+origin_y_px: 68
+center_x_px: 314.7751479289941
+center_y_px: 109.90532544378698
+offset_x_px: 94.775147928994102
+offset_y_px: 41.905325443786978
+distance_px: 103.6261789583714
+distance_m: 0.50125058112845411
 center_xyz_m: !!opencv-matrix
    rows: 3
    cols: 1
    dt: d
-   data: [ -0.27363947290754276, -0.64675980511469089,
-       2.4014749416058621 ]
+   data: [ -0.051990408287411492, -0.66652510350298722,
+       2.4877012631666409 ]

@@ -36,8 +36,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Capture one synchronized RGB/Helios frame pair, let the user choose a "
-            "2D ROI on the Helios intensity or depth image, then continuously track "
-            "the convex-hull object center relative to the selected origin point."
+            "2D ROI on the Helios intensity or depth image, then display the cropped "
+            "ROI point cloud with an optional bounding-box overlay in Open3D."
         )
     )
     parser.add_argument(
@@ -143,21 +143,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--origin-output",
-        type=Path,
-        default=REPO_ROOT / "pc_generation" / "selected_origin_point.yaml",
-        help="YAML file used to save the selected origin point on the depth image.",
-    )
-    parser.add_argument(
-        "--center-output",
-        type=Path,
-        default=REPO_ROOT / "pc_generation" / "center.yaml",
-        help="YAML file continuously updated with the tracked object center and distances.",
-    )
-    parser.add_argument(
         "--output",
         default=None,
-        help="Optional path to save the first detected plane point cloud as a PLY file.",
+        help="Optional path to save the cropped ROI point cloud as a PLY file.",
+    )
+    parser.add_argument(
+        "--show-ch",
+        action="store_true",
+        help="Overlay a simple bounding box centered on the convex-hull centroid.",
     )
     return parser.parse_args()
 
@@ -422,6 +415,23 @@ def save_point_cloud(path: str, point_cloud: o3d.geometry.PointCloud) -> None:
         raise RuntimeError(f"Failed to write point cloud to {path}")
 
 
+def show_point_cloud(
+    point_cloud: o3d.geometry.PointCloud,
+    overlay_geometry: o3d.geometry.Geometry | None = None,
+) -> None:
+    geometries: list[o3d.geometry.Geometry] = [point_cloud]
+    window_name = "Cropped ROI Point Cloud"
+    if overlay_geometry is not None:
+        geometries.append(overlay_geometry)
+        window_name = "Cropped ROI Point Cloud With Bounding Box"
+    o3d.visualization.draw_geometries(
+        geometries,
+        window_name=window_name,
+        width=1280,
+        height=720,
+    )
+
+
 def detect_plane(
     point_cloud: o3d.geometry.PointCloud,
     args: argparse.Namespace,
@@ -482,6 +492,45 @@ def build_inflated_object_hull(
     return hull_mesh, filtered_pixels_xy
 
 
+def build_centered_bounding_box(
+    hull_mesh: o3d.geometry.TriangleMesh,
+) -> o3d.geometry.LineSet:
+    vertices = np.asarray(hull_mesh.vertices)
+    if len(vertices) == 0:
+        raise RuntimeError("Cannot build bounding box because the convex hull has no vertices.")
+
+    centroid = vertices.mean(axis=0)
+    half_extent = np.max(np.abs(vertices - centroid), axis=0)
+    half_extent = np.maximum(half_extent, 1e-6)
+
+    corners = np.array(
+        [
+            [-1, -1, -1],
+            [1, -1, -1],
+            [1, 1, -1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [1, -1, 1],
+            [1, 1, 1],
+            [-1, 1, 1],
+        ],
+        dtype=np.float64,
+    )
+    corners = centroid + corners * half_extent
+    lines = [
+        [0, 1], [1, 2], [2, 3], [3, 0],
+        [4, 5], [5, 6], [6, 7], [7, 4],
+        [0, 4], [1, 5], [2, 6], [3, 7],
+    ]
+    colors = [[1.0, 0.0, 0.0] for _ in lines]
+
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(corners)
+    line_set.lines = o3d.utility.Vector2iVector(lines)
+    line_set.colors = o3d.utility.Vector3dVector(colors)
+    return line_set
+
+
 def remove_far_object_outliers(
     point_cloud: o3d.geometry.PointCloud,
     pixels_xy: np.ndarray,
@@ -513,6 +562,41 @@ def remove_far_object_outliers(
     return point_cloud.select_by_index(kept_indices), pixels_xy[np.asarray(kept_indices, dtype=np.int64)]
 
 
+def extract_points_inside_hull(
+    source_cloud: o3d.geometry.PointCloud,
+    hull_mesh: o3d.geometry.TriangleMesh,
+    epsilon: float = 1e-6,
+) -> o3d.geometry.PointCloud:
+    points = np.asarray(source_cloud.points)
+    if len(points) == 0:
+        raise RuntimeError("Source point cloud is empty.")
+
+    vertices = np.asarray(hull_mesh.vertices)
+    triangles = np.asarray(hull_mesh.triangles)
+    if len(vertices) == 0 or len(triangles) == 0:
+        raise RuntimeError("Convex hull mesh is empty.")
+
+    hull_center = vertices.mean(axis=0)
+    inside_mask = np.ones(len(points), dtype=bool)
+
+    for tri in triangles:
+        p0, p1, p2 = vertices[tri]
+        normal = np.cross(p1 - p0, p2 - p0)
+        norm = np.linalg.norm(normal)
+        if norm <= 1e-12:
+            continue
+        normal = normal / norm
+        if np.dot(normal, hull_center - p0) > 0:
+            normal = -normal
+        signed_distance = (points - p0) @ normal
+        inside_mask &= signed_distance <= epsilon
+
+    inside_indices = np.flatnonzero(inside_mask).tolist()
+    if not inside_indices:
+        raise RuntimeError("No ROI points remain inside the convex hull.")
+    return source_cloud.select_by_index(inside_indices)
+
+
 def compute_pixel_offset(
     origin_xy: tuple[int, int],
     object_pixels_xy: np.ndarray,
@@ -541,110 +625,74 @@ def main() -> int:
 
     phoenix = None
     helios = None
-    saved_output = False
     try:
         phoenix, helios = open_cameras(args)
 
-        print("Capturing one synchronized RGB/Helios pair for initialization...")
-        _, helios_frame = capture_paired_frames(
+        print("Capturing one synchronized RGB/Helios pair...")
+        rgb_frame, helios_frame = capture_paired_frames(
             phoenix, helios, args.max_delta_sec, args.max_attempts
-        )
-
-        print("Choose an origin point on the depth image.")
-        origin_xy = choose_origin_point(helios_frame)
-        origin_depth_mm = float(helios_frame.depth[origin_xy[1], origin_xy[0]])
-        if origin_depth_mm <= 0:
-            raise RuntimeError("The selected origin point does not have valid depth.")
-        origin_xyz_m = helios_frame.xyz[origin_xy[1], origin_xy[0]].astype(np.float64) / 1000.0
-        save_origin_point(args.origin_output, helios_frame, origin_xy)
-        print(
-            f"Saved origin point to {args.origin_output}: "
-            f"x={origin_xy[0]}, y={origin_xy[1]}"
         )
 
         print(f"Choose a bounding box on the {args.view} image.")
         roi = choose_roi(helios_frame, args.view)
         x, y, w, h = roi
         print(f"Selected ROI: x={x}, y={y}, w={w}, h={h}")
-        print("Tracking continuously. Press Ctrl+C to stop.")
 
-        frame_index = 0
-        while True:
-            frame_index += 1
-            try:
-                rgb_frame, helios_frame = capture_paired_frames(
-                    phoenix, helios, args.max_delta_sec, args.max_attempts
-                )
-                points_m, colors_rgb_u8, _projected_xy, roi_pixels_xy = colorize_roi_point_cloud(
-                    helios_frame.xyz,
-                    rgb_frame.image,
-                    calibration["rgb_camera_matrix"],
-                    calibration["rgb_dist_coeffs"],
-                    calibration["R"],
-                    calibration["T"],
-                    roi,
-                )
-                roi_cloud = build_open3d_point_cloud(points_m, colors_rgb_u8)
-                roi_point_count = len(points_m)
-                if roi_point_count < args.min_roi_points:
-                    raise RuntimeError(
-                        f"Only found {roi_point_count} valid 3D points in the ROI; need at least "
-                        f"{args.min_roi_points}."
-                    )
+        points_m, colors_rgb_u8, _projected_xy, roi_pixels_xy = colorize_roi_point_cloud(
+            helios_frame.xyz,
+            rgb_frame.image,
+            calibration["rgb_camera_matrix"],
+            calibration["rgb_dist_coeffs"],
+            calibration["R"],
+            calibration["T"],
+            roi,
+        )
+        roi_cloud = build_open3d_point_cloud(points_m, colors_rgb_u8)
+        roi_point_count = len(points_m)
+        if roi_point_count < args.min_roi_points:
+            raise RuntimeError(
+                f"Only found {roi_point_count} valid 3D points in the ROI; need at least "
+                f"{args.min_roi_points}."
+            )
 
-                roi_cloud, roi_pixels_xy = maybe_filter_point_cloud_and_pixels(
-                    roi_cloud,
-                    roi_pixels_xy,
-                    args.remove_outliers,
-                )
-                plane_cloud, non_plane_cloud, plane_model, plane_inlier_indices = detect_plane(
-                    roi_cloud,
-                    args,
-                )
-                non_plane_mask = np.ones(len(roi_pixels_xy), dtype=bool)
-                non_plane_mask[plane_inlier_indices] = False
-                non_plane_pixels_xy = roi_pixels_xy[non_plane_mask]
-                object_hull, object_pixels_xy = build_inflated_object_hull(
-                    non_plane_cloud,
-                    non_plane_pixels_xy,
-                    args.min_object_points,
-                    args.inflate_distance,
-                    args.object_outlier_mad_scale,
-                    args.object_outlier_max_distance,
-                )
-                object_center_xy, offset_xy = compute_pixel_offset(origin_xy, object_pixels_xy)
-                hull_center_xyz_m = compute_hull_center_xyz(object_hull)
-                distance_m = float(np.linalg.norm(hull_center_xyz_m - origin_xyz_m))
-                distance_px = float(np.hypot(offset_xy[0], offset_xy[1]))
+        roi_cloud, roi_pixels_xy = maybe_filter_point_cloud_and_pixels(
+            roi_cloud,
+            roi_pixels_xy,
+            args.remove_outliers,
+        )
+        plane_cloud, non_plane_cloud, plane_model, plane_inlier_indices = detect_plane(
+            roi_cloud,
+            args,
+        )
+        non_plane_mask = np.ones(len(roi_pixels_xy), dtype=bool)
+        non_plane_mask[plane_inlier_indices] = False
+        non_plane_pixels_xy = roi_pixels_xy[non_plane_mask]
+        object_hull, _object_pixels_xy = build_inflated_object_hull(
+            non_plane_cloud,
+            non_plane_pixels_xy,
+            args.min_object_points,
+            args.inflate_distance,
+            args.object_outlier_mad_scale,
+            args.object_outlier_max_distance,
+        )
+        object_box = build_centered_bounding_box(object_hull)
 
-                if args.output is not None and not saved_output:
-                    save_point_cloud(args.output, plane_cloud)
-                    print(f"Saved first detected plane point cloud to {args.output}")
-                    saved_output = True
+        if args.output is not None:
+            save_point_cloud(args.output, roi_cloud)
+            print(f"Saved cropped ROI point cloud to {args.output}")
 
-                write_center_data(
-                    args.center_output,
-                    frame_index,
-                    origin_xy,
-                    object_center_xy,
-                    offset_xy,
-                    distance_px,
-                    distance_m,
-                    hull_center_xyz_m,
-                )
-
-                a, b, c, d = plane_model
-                print(
-                    f"[frame {frame_index:05d}] "
-                    f"center_px=({object_center_xy[0]:.1f}, {object_center_xy[1]:.1f}) "
-                    f"offset_px=(dx={offset_xy[0]:.1f}, dy={offset_xy[1]:.1f}) "
-                    f"distance_px={distance_px:.1f} "
-                    f"distance_m={distance_m:.4f} "
-                    f"plane=({a:.4f}, {b:.4f}, {c:.4f}, {d:.4f})"
-                )
-            except RuntimeError as exc:
-                write_center_error(args.center_output, frame_index, str(exc))
-                print(f"[frame {frame_index:05d}] warn: {exc}")
+        a, b, c, d = plane_model
+        print(
+            f"Plane inliers: {len(plane_cloud.points):,} | "
+            f"Non-plane points: {len(non_plane_cloud.points):,} | "
+            f"Plane: {a:.4f}x + {b:.4f}y + {c:.4f}z + {d:.4f} = 0"
+        )
+        if args.show_ch:
+            print("Displaying the cropped ROI point cloud with the centered bounding box overlay in Open3D.")
+            show_point_cloud(roi_cloud, object_box)
+        else:
+            print("Displaying the cropped ROI point cloud in Open3D.")
+            show_point_cloud(roi_cloud)
         return 0
     finally:
         cv2.destroyAllWindows()

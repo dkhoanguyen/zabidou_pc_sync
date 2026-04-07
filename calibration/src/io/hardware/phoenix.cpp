@@ -1,5 +1,7 @@
 #include "calibration/io/hardware/phoenix.hpp"
 
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <stdexcept>
 #include <utility>
@@ -19,10 +21,65 @@ namespace calibration {
 namespace {
 
 #if CALIBRATION_HAS_ARENA_SDK
+cv::Mat debayer_polarized_color(Arena::IImage* image, const std::string& pixel_format) {
+    const int width = static_cast<int>(image->GetWidth());
+    const int height = static_cast<int>(image->GetHeight());
+    if (width <= 1 || height <= 1) {
+        throw std::runtime_error("Phoenix image is too small to debayer polarized Bayer data");
+    }
+
+    cv::Mat raw;
+    if (pixel_format == "BayerRG8") {
+        raw = cv::Mat(height, width, CV_8UC1, const_cast<std::uint8_t*>(image->GetData())).clone();
+    } else if (pixel_format == "BayerRG16") {
+        cv::Mat raw16(height, width, CV_16UC1, const_cast<std::uint8_t*>(image->GetData()));
+        cv::normalize(raw16, raw, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+    } else {
+        throw std::runtime_error("Unsupported polarized Bayer format: " + pixel_format);
+    }
+
+    const int sub_height = height / 2;
+    const int sub_width = width / 2;
+    cv::Mat raw_90(sub_height, sub_width, CV_8UC1);
+    cv::Mat raw_45(sub_height, sub_width, CV_8UC1);
+    cv::Mat raw_135(sub_height, sub_width, CV_8UC1);
+    cv::Mat raw_0(sub_height, sub_width, CV_8UC1);
+
+    for (int row = 0; row < sub_height; ++row) {
+        const int src_row0 = row * 2;
+        const int src_row1 = src_row0 + 1;
+        for (int col = 0; col < sub_width; ++col) {
+            const int src_col0 = col * 2;
+            const int src_col1 = src_col0 + 1;
+            raw_90.at<std::uint8_t>(row, col) = raw.at<std::uint8_t>(src_row0, src_col0);
+            raw_45.at<std::uint8_t>(row, col) = raw.at<std::uint8_t>(src_row0, src_col1);
+            raw_135.at<std::uint8_t>(row, col) = raw.at<std::uint8_t>(src_row1, src_col0);
+            raw_0.at<std::uint8_t>(row, col) = raw.at<std::uint8_t>(src_row1, src_col1);
+        }
+    }
+
+    cv::Mat bgr_0;
+    cv::Mat bgr_45;
+    cv::Mat bgr_90;
+    cv::Mat bgr_135;
+    cv::cvtColor(raw_0, bgr_0, cv::COLOR_BayerBG2BGR);
+    cv::cvtColor(raw_45, bgr_45, cv::COLOR_BayerBG2BGR);
+    cv::cvtColor(raw_90, bgr_90, cv::COLOR_BayerBG2BGR);
+    cv::cvtColor(raw_135, bgr_135, cv::COLOR_BayerBG2BGR);
+
+    cv::Mat s0;
+    cv::addWeighted(bgr_0, 0.5, bgr_90, 0.5, 0.0, s0);
+    return s0;
+}
+
 cv::Mat image_to_bgr(Arena::IImage* image, const std::string& pixel_format) {
     Arena::IImage* converted = nullptr;
 
     try {
+        if (pixel_format == "BayerRG8" || pixel_format == "BayerRG16") {
+            return debayer_polarized_color(image, pixel_format);
+        }
+
         if (pixel_format == "RGB8" || pixel_format == "BGR8") {
             converted = Arena::ImageFactory::Convert(image, BGR8);
         } else if (pixel_format == "Mono8" || pixel_format == "Mono16") {
