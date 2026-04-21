@@ -1,0 +1,45 @@
+%YAML:1.0
+---
+# ORB-SLAM3 monocular settings for the Phoenix publisher defaults.
+# Source calibration:
+#   calibration/results/combined_all_datasets/mono_rgb_calibration.yaml
+# The Phoenix publisher defaults to BayerRG8, binning=2, then extracts the
+# polarization S0 image, producing 612x512 BGR frames from the 1224x1024
+# calibration resolution. Intrinsics are scaled accordingly.
+
+File.version: "1.0"
+
+Camera.type: "PinHole"
+
+Camera1.fx: 454.34270535443
+Camera1.fy: 454.82627665952
+Camera1.cx: 304.676872932586
+Camera1.cy: 249.908011725453
+
+Camera1.k1: -0.115965069397508
+Camera1.k2: 0.102085949206327
+Camera1.p1: 0.000941175711393878
+Camera1.p2: 0.0014784936189767
+Camera1.k3: -0.0696044767763345
+
+Camera.width: 612
+Camera.height: 512
+Camera.fps: 30
+Camera.RGB: 0
+
+ORBextractor.nFeatures: 500
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 12
+ORBextractor.minThFAST: 5
+
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500.0

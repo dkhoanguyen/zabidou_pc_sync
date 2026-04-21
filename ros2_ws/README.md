@@ -10,6 +10,7 @@ Package:
 Node:
 
 - `colored_cloud_publisher`
+- `phoenix_image_publisher`
 
 Expected prerequisites:
 
@@ -50,3 +51,28 @@ To view in `rviz2`:
 2. Add a `PointCloud2` display
 3. Set topic to `/helios/colored_points`
 4. Set Fixed Frame to `helios_frame`
+
+## Live Phoenix Images for ORB-SLAM3
+
+Run the Phoenix image publisher:
+
+```bash
+ros2 run lucid_colored_cloud phoenix_image_publisher --ros-args \
+  -p image_topic:=/phoenix/image_raw \
+  -p camera_info_topic:=/phoenix/camera_info \
+  -p calibration_yaml:=/home/khoa/Projects/zabidou_pc_sync/calibration/results/combined_all_datasets/mono_rgb_calibration.yaml \
+  -p fps:=30.0 \
+  -p binning:=2
+```
+
+This publishes debayered `bgr8` frames on `/phoenix/image_raw` plus matching
+`CameraInfo` on `/phoenix/camera_info`. Point a ROS2 ORB-SLAM3 wrapper at that
+image topic and use the generated Phoenix ORB-SLAM3 settings YAML from a dataset
+capture, or the same intrinsics from the calibration YAML.
+
+Quick topic checks:
+
+```bash
+ros2 topic hz /phoenix/image_raw
+ros2 topic echo /phoenix/camera_info --once
+```

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iostream>
+#include <algorithm>
 #include <string>
 #include <stdexcept>
 #include <utility>
@@ -21,6 +23,55 @@ namespace calibration {
 namespace {
 
 #if CALIBRATION_HAS_ARENA_SDK
+template <typename Value>
+bool try_set_node_value(GenApi::INodeMap* node_map,
+                        const char* node_name,
+                        const Value& value,
+                        const std::string& context = {}) {
+    try {
+        Arena::SetNodeValue<Value>(node_map, node_name, value);
+        return true;
+    } catch (const std::exception& ex) {
+        std::cerr << "[Phoenix] Warning: could not set " << node_name;
+        if (!context.empty()) {
+            std::cerr << " (" << context << ")";
+        }
+        std::cerr << ": " << ex.what() << "\n";
+        return false;
+    }
+}
+
+void configure_frame_rate(GenApi::INodeMap* node_map, double requested_fps) {
+    if (requested_fps <= 0.0) {
+        return;
+    }
+
+    if (!try_set_node_value<bool>(node_map, "AcquisitionFrameRateEnable", true)) {
+        return;
+    }
+
+    try {
+        GenApi::CFloatPtr frame_rate_node = node_map->GetNode("AcquisitionFrameRate");
+        if (frame_rate_node == nullptr || !GenApi::IsWritable(frame_rate_node)) {
+            std::cerr << "[Phoenix] Warning: AcquisitionFrameRate is not writable; leaving camera default\n";
+            return;
+        }
+
+        const double min_fps = frame_rate_node->GetMin();
+        const double max_fps = frame_rate_node->GetMax();
+        const double clamped_fps = std::clamp(requested_fps, min_fps, max_fps);
+        if (clamped_fps != requested_fps) {
+            std::cerr << "[Phoenix] Warning: requested FPS " << requested_fps
+                      << " is outside camera range [" << min_fps << ", " << max_fps
+                      << "]; using " << clamped_fps << "\n";
+        }
+        frame_rate_node->SetValue(clamped_fps);
+    } catch (const std::exception& ex) {
+        std::cerr << "[Phoenix] Warning: could not configure AcquisitionFrameRate="
+                  << requested_fps << ": " << ex.what() << "\n";
+    }
+}
+
 cv::Mat debayer_polarized_color(Arena::IImage* image, const std::string& pixel_format) {
     const int width = static_cast<int>(image->GetWidth());
     const int height = static_cast<int>(image->GetHeight());
@@ -238,28 +289,37 @@ void Phoenix::configure_device() {
         throw std::runtime_error("Phoenix device is not initialized");
     }
 
-    Arena::SetNodeValue<GenICam::gcstring>(device_->GetNodeMap(), "PixelFormat", pixel_format_.c_str());
-    Arena::SetNodeValue<bool>(device_->GetNodeMap(), "AcquisitionFrameRateEnable", true);
-    Arena::SetNodeValue<double>(device_->GetNodeMap(), "AcquisitionFrameRate", acquisition_frame_rate_hz_);
+    auto* node_map = device_->GetNodeMap();
+    auto* stream_node_map = device_->GetTLStreamNodeMap();
+
+    Arena::SetNodeValue<GenICam::gcstring>(node_map, "PixelFormat", pixel_format_.c_str());
+    configure_frame_rate(node_map, acquisition_frame_rate_hz_);
 
     if (binning_ > 1) {
-        Arena::SetNodeValue<int64_t>(device_->GetNodeMap(), "BinningHorizontal", binning_);
-        Arena::SetNodeValue<int64_t>(device_->GetNodeMap(), "BinningVertical", binning_);
-        Arena::SetNodeValue<GenICam::gcstring>(
-            device_->GetNodeMap(), "BinningHorizontalMode", binning_mode_.c_str());
-        Arena::SetNodeValue<GenICam::gcstring>(
-            device_->GetNodeMap(), "BinningVerticalMode", binning_mode_.c_str());
+        const bool horizontal_ok = try_set_node_value<int64_t>(
+            node_map, "BinningHorizontal", binning_, "falling back to 1 if rejected");
+        const bool vertical_ok = try_set_node_value<int64_t>(
+            node_map, "BinningVertical", binning_, "falling back to 1 if rejected");
+        if (horizontal_ok && vertical_ok) {
+            try_set_node_value<GenICam::gcstring>(
+                node_map, "BinningHorizontalMode", binning_mode_.c_str());
+            try_set_node_value<GenICam::gcstring>(
+                node_map, "BinningVerticalMode", binning_mode_.c_str());
+        } else {
+            try_set_node_value<int64_t>(node_map, "BinningHorizontal", 1);
+            try_set_node_value<int64_t>(node_map, "BinningVertical", 1);
+        }
     } else {
-        Arena::SetNodeValue<int64_t>(device_->GetNodeMap(), "BinningHorizontal", 1);
-        Arena::SetNodeValue<int64_t>(device_->GetNodeMap(), "BinningVertical", 1);
+        try_set_node_value<int64_t>(node_map, "BinningHorizontal", 1);
+        try_set_node_value<int64_t>(node_map, "BinningVertical", 1);
     }
 
-    Arena::SetNodeValue<GenICam::gcstring>(
-        device_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", stream_buffer_handling_mode_.c_str());
-    Arena::SetNodeValue<bool>(
-        device_->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", auto_negotiate_packet_size_);
-    Arena::SetNodeValue<bool>(
-        device_->GetTLStreamNodeMap(), "StreamPacketResendEnable", packet_resend_enable_);
+    try_set_node_value<GenICam::gcstring>(
+        stream_node_map, "StreamBufferHandlingMode", stream_buffer_handling_mode_.c_str());
+    try_set_node_value<bool>(
+        stream_node_map, "StreamAutoNegotiatePacketSize", auto_negotiate_packet_size_);
+    try_set_node_value<bool>(
+        stream_node_map, "StreamPacketResendEnable", packet_resend_enable_);
 #endif
 }
 
