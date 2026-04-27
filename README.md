@@ -145,3 +145,7 @@ rm -rf calibration/build
 cmake -S calibration -B calibration/build -DCMAKE_BUILD_TYPE=Release
 cmake --build calibration/build -j
 ```
+
+## Building Sfm on Jetson and running example dataset
+The instructions for cloning, building and running nvblox with a jetson can be found here
+https://github.com/valtsblukis/nvblox
