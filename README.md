@@ -1,6 +1,6 @@
 # zabidou_pc_sync
 
-This repository contains a C++ calibration sub-project under `calibration/` for intrinsic and extrinsic calibration between Lucid Phoenix RGB and Helios2 depth cameras.
+This repository contains a C++ calibration sub-project under `calibration/` for intrinsic and extrinsic calibration between Lucid Phoenix RGB and Helios2 depth cameras, plus Python utilities under `pc_generation/` for reconstructing and visualizing colored point clouds from the calibration outputs.
 
 ## Dependencies
 
@@ -85,6 +85,8 @@ The main executable is:
 ./calibration/build/apps/run_calibration --help
 ```
 
+Calibration outputs should be written under `calibration/results/`. The app-based mono and stereo calibration tools already default to that location, for example `calibration/results/combined_all_datasets/`.
+
 Offline dataset calibration:
 
 ```bash
@@ -94,7 +96,7 @@ Offline dataset calibration:
   --rows 9 \
   --cols 6 \
   --square-size 0.025 \
-  --out calibration_result.yaml
+  --out calibration/results/calibration_result.yaml
 ```
 
 Live camera calibration:
@@ -106,7 +108,7 @@ Live camera calibration:
   --cols 6 \
   --square-size 0.025 \
   --max-frames 50 \
-  --out calibration_result.yaml
+  --out calibration/results/calibration_result.yaml
 ```
 
 Current CLI flags:
@@ -119,6 +121,70 @@ Current CLI flags:
 - `--max-frames N`
 - `--out PATH`
 - `--preview`
+
+## Calibration Workflow Notes
+
+For the current app-based workflow in `calibration/apps/`:
+
+- Mono RGB calibration writes `mono_rgb_calibration.yaml` under `calibration/results/...`.
+- Mono depth calibration writes `mono_depth_calibration.yaml` under `calibration/results/...`.
+- Stereo calibration writes `stereo_calibration.yaml` under `calibration/results/...`.
+- Stereo calibration uses the manually calibrated RGB intrinsics from `mono_rgb_calibration.yaml`.
+- Stereo calibration uses the Helios ToF factory intrinsics read from the device for the depth camera intrinsics.
+
+Typical app-based commands are:
+
+```bash
+./calibration/build/apps/mono_calibration_app \
+  --combine-all-datasets \
+  --modality rgb
+
+./calibration/build/apps/mono_calibration_app \
+  --combine-all-datasets \
+  --modality depth
+
+./calibration/build/apps/stereo_calibration_app \
+  --combine-all-datasets
+```
+
+That produces a result set like:
+
+- `calibration/results/combined_all_datasets/mono_rgb_calibration.yaml`
+- `calibration/results/combined_all_datasets/mono_depth_calibration.yaml`
+- `calibration/results/combined_all_datasets/stereo_calibration.yaml`
+
+## Point Cloud Reconstruction
+
+The `pc_generation/` utilities consume the stereo calibration result, typically:
+
+`calibration/results/combined_all_datasets/stereo_calibration.yaml`
+
+Useful scripts for reconstructing or viewing a colored Helios point cloud are:
+
+- `pc_generation/colorize_helios_point_cloud.py`: captures one RGB + Helios pair, colorizes the Helios point cloud, and saves a `.ply`.
+- `pc_generation/show_stereo_point_cloud_open3d.py`: captures one pair or streams continuously and shows the colored point cloud in Open3D.
+- `pc_generation/view_colored_pointcloud.py`: captures one pair and shows the colored point cloud with Matplotlib.
+- `pc_generation/show_white_plane_point_cloud_open3d.py`: Open3D viewer variant for white-plane inspection/debugging.
+
+Example commands from the repo root:
+
+```bash
+python3 pc_generation/colorize_helios_point_cloud.py \
+  --stereo-yaml calibration/results/combined_all_datasets/stereo_calibration.yaml \
+  --output calibration/results/combined_all_datasets/helios_colored_point_cloud.ply \
+  --once
+```
+
+```bash
+python3 pc_generation/show_stereo_point_cloud_open3d.py \
+  --stereo-yaml calibration/results/combined_all_datasets/stereo_calibration.yaml \
+  --preview
+```
+
+```bash
+python3 pc_generation/view_colored_pointcloud.py \
+  --stereo-yaml calibration/results/combined_all_datasets/stereo_calibration.yaml
+```
 
 ## Test
 
